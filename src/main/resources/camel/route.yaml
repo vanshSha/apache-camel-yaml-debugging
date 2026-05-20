@@ -1,0 +1,29 @@
+- route:
+    id: hello-route
+
+    from:
+      uri: "platform-http:/api/hello"
+      parameters:
+        httpMethodRestrict: GET
+      steps:
+        - log:
+            message: "Hello"
+
+        - setBody:
+            constant: '{"message":"Hello from Camel!"}'
+
+- route:
+    id: create-user-route
+    
+    from:
+      uri: "platform-http:/api/user"
+      parameters:
+        httpMethodRestrict: POST
+    steps:
+      - log:
+          message: "Received POST request body: ${body}"
+      - setHeader:
+          name: Content-Type
+          constant: application/json
+      - setBody:
+          simple: '{"status":"success","message":"User created!","receivedData":${body}}'            
