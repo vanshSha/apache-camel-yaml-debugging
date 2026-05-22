@@ -1,3 +1,23 @@
+- onException:
+    exception:
+      - java.lang.Exception
+    handled:
+      constant: "true"
+    steps:
+      - setHeader:
+          name: CamelHttpResponseCode
+          constant: "400"
+      - setHeader:
+          name: Content-Type
+          constant: application/json
+      - setBody:
+          simple: '{"status":"error","message":"${exception.message}"}'
+
+
+
+
+
+
 - route:
     id: hello-route
 
@@ -5,25 +25,42 @@
       uri: "platform-http:/api/hello"
       parameters:
         httpMethodRestrict: GET
+
       steps:
         - log:
             message: "Hello"
+
+        - setHeader:
+            name: Content-Type
+            constant: application/json
 
         - setBody:
             constant: '{"message":"Hello from Camel!"}'
 
 - route:
     id: create-user-route
-    
+
     from:
       uri: "platform-http:/api/user"
       parameters:
         httpMethodRestrict: POST
-    steps:
-      - log:
-          message: "Received POST request body: ${body}"
-      - setHeader:
-          name: Content-Type
-          constant: application/json
-      - setBody:
-          simple: '{"status":"success","message":"User created!","receivedData":${body}}'            
+
+      steps:
+        - log:
+            message: "Received POST request body: ${body}"
+
+        - bean:
+           ref: userValidator
+           method: validate        
+
+        - setHeader:
+            name: Content-Type
+            constant: application/json
+
+        - setBody:
+            simple: |
+              {
+                "status":"success",
+                "message":"User created!",
+                "receivedData": ${body}
+              }
